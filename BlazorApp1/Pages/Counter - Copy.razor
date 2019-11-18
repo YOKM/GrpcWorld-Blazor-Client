@@ -1,0 +1,93 @@
+﻿@page "/ImagingSchedule"
+@using GrpcService.Data;
+@using GrpcService.Protos;
+@using Grpc.Net.Client;
+
+<h1>Imaging Task Scheduler</h1>
+
+<p>Current count: @currentCount</p>
+
+<button class="btn btn-primary" @onclick="IncrementCount ">Click me A</button>
+
+
+@*<p>Jobname : @MasterJob_APIdata.Jobname</p>*@
+
+
+
+<input type="text" @bind="@Name" />
+<button class="btn btn-primary" @onclick="@SendName">Send Name</button>
+<label>@Greetings</label>
+
+
+@if (Im == null)
+{
+
+    <p><em>Loading...</em></p>
+
+}
+else { 
+<p>Jobname : @Im.Jobname</p>
+}
+
+
+@code {
+    int currentCount = 0;
+
+    int Name = 11;
+
+    string Greetings = null;
+    string InsertReply = null;
+
+
+
+    ImagingScheduleJobModel Im = new ImagingScheduleJobModel();
+
+
+    void IncrementCount()
+    {
+        currentCount++;
+    }
+
+
+
+    GrpcChannel channel = GrpcChannel.ForAddress("https://localhost:5001");
+
+
+    async Task SendName()
+    {
+
+        //  this.Greetings = await this.StudentService.GetStudentByID(this.Name);
+        //  this.Greetings = await this.ImagingJobService.GetJobByID(this.Name);
+
+        var ScheduleJobClient = new RemoteImagingScheduleJob.RemoteImagingScheduleJobClient(channel);
+        var scheduleJobClient_Detail = new RemoteImagingScheduleJob_Detail.RemoteImagingScheduleJob_DetailClient(channel);
+
+        var ScheduleJobInput = new ImagingScheduleJobLookupModel { Id = this.Name };
+        var ScheduleJobInput_Detail = new ImagingScheduleJobLookupModel_Detail { Jobid = this.Name };
+
+        var ScheduleJobReply = await ScheduleJobClient.GetImagingScheduleJobInfoAsync(ScheduleJobInput);
+        var ScheduleJobReply_Detail = await scheduleJobClient_Detail.GetImagingScheduleJobInfo_DetailAsync(ScheduleJobInput_Detail);
+
+        //     this.Greetings = ScheduleJobReply.Jobname +"  : " + ScheduleJobReply_Detail.EmailNotificationAddress;
+
+
+        Im = await ScheduleJobClient.GetImagingScheduleJobInfoAsync(ScheduleJobInput);
+
+    }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        //MasterTask = await Http.GetJsonAsync<ImagingScheduleJob[]>("/api/ImagingScheduleJobs/");
+        //MasterJob_APIdata = new ImagingScheduleJob();
+        //DetailJob_APIdata = new ImagingJobdetails();
+          var ScheduleJobClient = new RemoteImagingScheduleJob.RemoteImagingScheduleJobClient(channel);
+        var ScheduleJobInput = new ImagingScheduleJobLookupModel { Id = 45};
+       Im = await ScheduleJobClient.GetImagingScheduleJobInfoAsync(ScheduleJobInput);
+
+    }
+
+
+
+
+}

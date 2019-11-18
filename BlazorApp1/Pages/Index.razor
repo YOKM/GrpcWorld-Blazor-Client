@@ -2,6 +2,8 @@
 @using BlazorApp1.Data
 @inject StudentService StudentService
 @using GrpcService.Protos;
+@using Grpc.Net.Client;
+
 
 
 <h1>gRPC c# Blazor!</h1>
@@ -14,7 +16,8 @@
 <label>@Greetings</label>
 
 
-<br><button class="btn btn-primary" @onclick="@AddNewStd">New</button>
+<br>
+<button class="btn btn-primary" @onclick="@AddNewStd">New</button>
 <br><label>@InsertReply</label>
 
 
@@ -27,35 +30,55 @@
 
 @code {
 
-    //  string Name = "Your Name";
+    
+    GrpcChannel channel = GrpcChannel.ForAddress("https://localhost:5001");
+
+    //  string Name = "Your Name";w
 
     int Name = 11;
 
     string Greetings = null;
-      string InsertReply = null;
+    string InsertReply = null;
 
 
     async Task SendName()
     {
+        //  this.Greetings = await this.StudentService.GetStudentByID(this.Name);
+        //  this.Greetings = await this.ImagingJobService.GetJobByID(this.Name);
 
-        this.Greetings = await this.StudentService.GetStudentByID(this.Name);
+        var ScheduleJobClient = new RemoteImagingScheduleJob.RemoteImagingScheduleJobClient(channel);
+        var scheduleJobClient_Detail = new RemoteImagingScheduleJob_Detail.RemoteImagingScheduleJob_DetailClient(channel);
+
+        var ScheduleJobInput = new ImagingScheduleJobLookupModel { Id = this.Name };
+        var ScheduleJobInput_Detail = new ImagingScheduleJobLookupModel_Detail { Jobid = this.Name};
+
+        var ScheduleJobReply = await ScheduleJobClient.GetImagingScheduleJobInfoAsync(ScheduleJobInput);
+        var ScheduleJobReply_Detail = await scheduleJobClient_Detail.GetImagingScheduleJobInfo_DetailAsync(ScheduleJobInput_Detail);
+
+        this.Greetings = ScheduleJobReply.Jobname +"  : " + ScheduleJobReply_Detail.EmailNotificationAddress;
+
     }
 
     async Task AddNewStd()
     {
-
-       
-
+               
         StudentModel aNewStudent = new StudentModel()
-            {
+        {
 
-                FirstName = "ABCVX",
-                LastName = "BNNB",
-                School = "RICOH",
-            };
+            FirstName = "ABCVX",
+            LastName = "BNNB",
+            School = "RICOH",
+        };
 
         InsertReply = await this.StudentService.AddNewStd(aNewStudent);
 
     }
+
+
+
+   
+
+
+
 }
 

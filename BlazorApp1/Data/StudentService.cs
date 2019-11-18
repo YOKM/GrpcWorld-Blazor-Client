@@ -7,10 +7,6 @@ using System.Threading.Tasks;
 using GrpcService.Protos;
 
 
-
-
-
-
 namespace BlazorApp1.Data
 {
 
