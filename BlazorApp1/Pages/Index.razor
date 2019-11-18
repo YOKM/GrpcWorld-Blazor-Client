@@ -1,0 +1,61 @@
+﻿@page "/"
+@using BlazorApp1.Data
+@inject StudentService StudentService
+@using GrpcService.Protos;
+
+
+<h1>gRPC c# Blazor!</h1>
+
+
+<h1>grpc Connection</h1>
+
+<input type="text" @bind="@Name" />
+<button class="btn btn-primary" @onclick="@SendName">Send Name</button>
+<label>@Greetings</label>
+
+
+<br><button class="btn btn-primary" @onclick="@AddNewStd">New</button>
+<br><label>@InsertReply</label>
+
+
+
+
+
+
+
+
+
+@code {
+
+    //  string Name = "Your Name";
+
+    int Name = 11;
+
+    string Greetings = null;
+      string InsertReply = null;
+
+
+    async Task SendName()
+    {
+
+        this.Greetings = await this.StudentService.GetStudentByID(this.Name);
+    }
+
+    async Task AddNewStd()
+    {
+
+       
+
+        StudentModel aNewStudent = new StudentModel()
+            {
+
+                FirstName = "ABCVX",
+                LastName = "BNNB",
+                School = "RICOH",
+            };
+
+        InsertReply = await this.StudentService.AddNewStd(aNewStudent);
+
+    }
+}
+
