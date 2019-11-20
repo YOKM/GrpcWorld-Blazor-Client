@@ -1,16 +1,369 @@
 ﻿@page "/counter"
 
+
+@using GrpcService.Data;
+@using GrpcService.Protos;
+@using Grpc.Net.Client;
+
+
+
 <h1>Counter</h1>
 
 <p>Current count: @currentCount</p>
 
 <button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
 
+
+@if (Im_TaskList == null)
+{
+
+    <p><em>Loading...</em></p>
+
+}
+else
+{
+    <p>Jobname : @Im_TaskList.Items.Count()</p>
+
+
+    <table>
+
+        <tr style="height: 30px; background-color:#336699 ; color:#FFFFFF ;border: solid 1px #659EC7;">
+            <td>
+                @*Header and filter should go here*@
+            </td>
+
+            <td align="left" style="border: solid 1px #659EC7; padding: 5px;table-layout:fixed;">
+                Job Name
+                @*<img src="@ImageSortname" onclick="@(async () => await JobSorting("JobName"))" />
+                    <label style="font-size:10px" onclick="@(async () => await JobSorting("JobName"))">Sort </label>*@
+
+                @*<input width="70" onchange=@onJobnameChanged oninput="(this.dispatchEvent(new CustomEvent('change', {bubbles: true})))" />*@
+                @*<input type="text" class="form-control" placeholder="Search" aria-label="" aria-describedby="basic-addon1"
+                    onchange=@onJobnameChanged oninput="(this.dispatchEvent(new CustomEvent('change', {bubbles: true})))" />*@
+                <label style="font-size:10px">Search</label>
+            </td>
+            <td data-toggle="popover" style="border: solid 1px #659EC7; padding: 5px;table-layout:fixed;">
+                Schedule Time
+            </td>
+            <td align="left" style="border: solid 1px #659EC7; padding: 5px;table-layout:fixed;">
+                Active
+            </td>
+            <td align="left" style="border: solid 1px #659EC7; padding: 5px;table-layout:fixed;">
+                Description
+            </td>
+            <td align="left" style="border: solid 1px #659EC7; padding: 5px;table-layout:fixed;">
+                Edit
+            </td>
+        </tr>
+
+
+        @*Master info*@
+        @foreach (var MTask in Im_TaskList.Items)
+        {
+
+            <tr style="border-style:solid;border-width:2px;border-color: @(MTask.Id == JobId ? "#ff6a00" : "#a2aabe")">
+                @*Expand Image in the first cell to open details info *@
+
+                <td>
+
+
+                    @*<button class="btn btn-primary" @onclick="@(async () => await getTaskDetails(MTask.Id))">New</button>
+        <label>@DetailTask.EmailNotificationAddress</label>*@
+
+                    @if (MTask.Id == JobId)
+                    {
+                        <img src="@Imagename" @onclick="@(async () => await getTaskDetails(MTask.Id))" />
+                    }
+                    else
+                    {
+                        <img src="Images/expand.png" @onclick="@(async () => await getTaskDetails(MTask.Id))" />
+                    }
+
+                </td>
+
+
+
+                <td>@MTask.Id</td>
+                <td align="left" style="border: solid 1px #659EC7; padding: 5px;table-layout:fixed; ">
+                    @MTask.Jobname
+                </td>
+                <td align="left" style="border: solid 1px #659EC7; padding: 5px;table-layout:fixed;">
+                    @MTask.ScheduleTIME
+
+                </td>
+                <td align="left" style="border: solid 1px #659EC7; padding: 5px;table-layout:fixed;">
+                    @* @MTask.IsActive*@
+                    @if (MTask.IsActive == "True")
+                    {
+                        <img src="Images/bullet_green.png" />
+                    }
+                    else
+                    {
+                        <img src="Images/bullet_red.png" />
+
+                    }
+                </td>
+                <td align="left" style="border: solid 1px #659EC7; padding: 5px;table-layout:fixed;">
+                    @MTask.Description
+                </td>
+
+                @*Edit Button onclick = "@(async () => await EditTaskMaster(MTask.Id))"*@
+                <td>
+                    @*<img src="Images/input_edit.png" onclick="@(async () => await EditTaskMaster(MTask.Id))" />*@
+                </td>
+            </tr>
+
+
+
+            @if (DetailTask != null)
+            {
+                @if (showDetails)
+                {
+                    @if (MTask.Id == JobId)
+                    {
+                        <tr id="detailsRow" colspan="6">
+                            <td colspan="6">
+
+                                <div><text style="color:brown; font-size:medium">Details on Task: </text></div>
+
+                                @if (!string.IsNullOrWhiteSpace(@DetailTask.EmailNotificationAddress))
+                                {
+                                    <div> <span class="detailsTitle">EmailNotifications:</span> <span class="detailsData">@DetailTask.EmailNotificationAddress </span></div>
+
+                                }
+
+                                @if (!string.IsNullOrWhiteSpace(@DetailTask.Extra1))
+                                {
+                                    <div> <span class="detailsTitle">Extra1:</span> <span class="detailsData">@DetailTask.Extra1 </span></div>
+
+                                }
+
+                                @if (!string.IsNullOrWhiteSpace(@DetailTask.Extra2))
+                                {
+                                    <div> <span class="detailsTitle">Extra2:</span> <span class="detailsData">@DetailTask.Extra2 </span></div>
+
+                                }
+
+                                @if (!string.IsNullOrWhiteSpace(@DetailTask.Extra3))
+                                {
+                                    <div> <span class="detailsTitle">Extra3:</span> <span class="detailsData">@DetailTask.Extra3 </span></div>
+
+                                }
+
+                                @if (!string.IsNullOrWhiteSpace(@DetailTask.Extra4))
+                                {
+                                    <div> <span class="detailsTitle">Extra4:</span> <span class="detailsData">@DetailTask.Extra4 </span></div>
+
+                                }
+
+                                @if (!string.IsNullOrWhiteSpace(@DetailTask.Extra5))
+                                {
+                                    <div> <span class="detailsTitle">Extra5:</span> <span class="detailsData">@DetailTask.Extra5 </span></div>
+
+                                }
+
+                                @if (!string.IsNullOrWhiteSpace(@DetailTask.TimeSpanWait))
+                                {
+                                    <div> <span class="detailsTitle">TimeSpanWait:</span> <span class="detailsData">@DetailTask.TimeSpanWait </span></div>
+
+                                }
+
+                                @if (!string.IsNullOrWhiteSpace(@DetailTask.FileExtensiontoUpload))
+                                {
+                                    <div> <span class="detailsTitle">FileExtensiontoUpload:</span> <span class="detailsData">@DetailTask.FileExtensiontoUpload </span></div>
+
+                                }
+
+
+                                @if (!string.IsNullOrWhiteSpace(@DetailTask.PortNumber))
+                                {
+                                    <div> <span class="detailsTitle">PortNumber:</span> <span class="detailsData">@DetailTask.PortNumber </span></div>
+
+                                }
+
+                                @if (!string.IsNullOrWhiteSpace(@DetailTask.PortNumber))
+                                {
+                                    <div> <span class="detailsTitle">PortNumber:</span> <span class="detailsData">@DetailTask.PortNumber </span></div>
+
+                                }
+
+                                @if (!string.IsNullOrWhiteSpace(@DetailTask.SshfingerPrint))
+                                {
+                                    <div> <span class="detailsTitle">SSHFingerPrint:</span> <span class="detailsData">@DetailTask.SshfingerPrint </span></div>
+
+                                }
+
+                                @if (!string.IsNullOrWhiteSpace(@DetailTask.PaswordsFtp))
+                                {
+                                    <div> <span class="detailsTitle">PasswordsFTP:</span> <span class="detailsData">@DetailTask.PaswordsFtp </span></div>
+
+                                }
+
+                                @if (!string.IsNullOrWhiteSpace(@DetailTask.UsernamesFtp))
+                                {
+                                    <div> <span class="detailsTitle">UsernamesFTP:</span> <span class="detailsData">@DetailTask.UsernamesFtp </span></div>
+
+                                }
+
+
+                                @if (!string.IsNullOrWhiteSpace(@DetailTask.SFtpdownloadTo))
+                                {
+                                    <div> <span class="detailsTitle">sFTPDownloadTo:</span> <span class="detailsData">@DetailTask.SFtpdownloadTo </span></div>
+
+                                }
+
+                                @if (!string.IsNullOrWhiteSpace(@DetailTask.SFtpdownloadFrom))
+                                {
+                                    <div> <span class="detailsTitle">sFTPDownloadFrom:</span> <span class="detailsData">@DetailTask.SFtpdownloadFrom </span></div>
+
+                                }
+
+                                @if (!string.IsNullOrWhiteSpace(@DetailTask.SFtpuploadFrom))
+                                {
+                                    <div> <span class="detailsTitle">sFTPuploadFrom:</span> <span class="detailsData">@DetailTask.SFtpuploadFrom </span></div>
+
+                                }
+
+                                @if (!string.IsNullOrWhiteSpace(@DetailTask.SFtpuploadto))
+                                {
+                                    <div> <span class="detailsTitle">sFTPuploadTo</span> <span class="detailsData">@DetailTask.SFtpuploadto </span></div>
+
+                                }
+
+                                @if (!string.IsNullOrWhiteSpace(@DetailTask.SFtphost))
+                                {
+                                    <div> <span class="detailsTitle">sFTPHost</span> <span class="detailsData">@DetailTask.SFtphost </span></div>
+
+                                }
+
+                           
+                            </td>
+                        </tr>
+
+
+
+                    }
+
+                }
+            }
+
+        }
+
+    </table>
+
+
+
+
+}
+
+
+
 @code {
     int currentCount = 0;
+
+    ImagingScheduleJobModel Im = new ImagingScheduleJobModel();
+
+    ImagingScheduleJobList Im_TaskList = new ImagingScheduleJobList();
+    ImagingScheduleJobList_Detail ImDetail_TaskList = new ImagingScheduleJobList_Detail();
+
+    ImagingScheduleJobLookupModel DetailsTask = new ImagingScheduleJobLookupModel();
+
+
+    GrpcChannel channel = GrpcChannel.ForAddress("https://localhost:5001");
+
+
+    ReplyJob_Detail RJobDetails = new ReplyJob_Detail();
+
+    ImagingScheduleJobModel_Detail DetailTask = new ImagingScheduleJobModel_Detail();
+
+
+
+
+
+
+
+    int CurrentDetailsJobID = 0;
+
+    string Imagename = "Images/expand.png";
+    string ImageSortname = "Images/sort_ascending.png";
+    bool showDetails = false;
+    string ShowEditWindow = "";
+
+    string closeMessage = "";
+    string Messages = "";
+    bool sortStatus = false;
+    int JobId = 0;
 
     void IncrementCount()
     {
         currentCount++;
     }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        var ScheduleJobClient = new RemoteImagingScheduleJob.RemoteImagingScheduleJobClient(channel);
+        var ScheduleJobInput = new ImagingScheduleJobLookupModel { Id = 45 };
+        Im = await ScheduleJobClient.GetImagingScheduleJobInfoAsync(ScheduleJobInput);
+
+        var em_job = new EmptyJob();
+
+        Im_TaskList = await ScheduleJobClient.RetrieveAllImagingScheduleJobsAsync(em_job);
+
+    }
+
+
+    async Task getTaskDetails(int JobId_fromMasterAPI)
+    {
+        //showDetails = true;
+
+        if (JobId != JobId_fromMasterAPI)
+        {
+            Imagename = "Images/expand.png";
+            showDetails = true;
+
+        }
+        else
+        {
+            if (showDetails == false)
+            {
+                Imagename = "Images/expand.png";
+
+                showDetails = true;
+
+            }
+            else
+            {
+                Imagename = "Images/toggle.png";
+                showDetails = false;
+            }
+
+        }
+
+
+         JobId = JobId_fromMasterAPI;
+       
+        Console.WriteLine("Details" + JobId_fromMasterAPI);
+
+        var client_detail = new RemoteImagingScheduleJob_Detail.RemoteImagingScheduleJob_DetailClient(channel);
+        var input_Detail = new ImagingScheduleJobLookupModel_Detail { Jobid = JobId_fromMasterAPI };
+
+
+        var reply_Detail = await client_detail.GetImagingScheduleJobInfo_DetailAsync(input_Detail);
+
+
+        //DetailTask = reply_Detail.Clone();
+
+
+        this.DetailTask = reply_Detail;
+
+
+
+
+
+
+    }
+
+
 }
