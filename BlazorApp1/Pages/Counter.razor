@@ -14,6 +14,116 @@
 <button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
 
 
+
+@*Edit window popup in the center for editing *@
+@if (ShowEditWindow == "Open")
+{
+
+    <div id="outPopup" style="position:fixed ;top: 50%;  left: 50%; transform: translate(-50%, -50%); width: 60%;background:#dcdfed;border-color:black;border-style:solid">
+
+        <div class="modal-header text-center">
+            <h4 class="modal-title w-100 font-weight-bold">Edit Schedule Task</h4>
+            <h5>@EditTask.Jobname </h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close" @onclick="@CloseEditWindow">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+
+
+        <table class="tg" style=" width: 100%;height: 100%;">
+            <tr>
+                <th class="tg-yt02">Task Name </th>
+                <th class="tg-yt02">Schedule Time </th>
+                <th class="tg-yt02">Set Active </th>
+            </tr>
+            <tr>
+                <td class="tg-3w7a"><input type="text" class="form-control" value="@EditTask.Jobname" /> </td>
+                <td class="tg-5d1u"><input type="text"  value="@EditTask.ScheduleTIME" /></td>
+                <td class="tg-5d1u"><input type="text" class="form-control" value="@EditTask.IsActive" /></td>
+            </tr>
+        </table>
+
+        <table class="tg" style=" width: 100%;height: 100%;">
+            <tr>
+                <th class="tg-yt02">Email Notification </th>
+                <th class="tg-yt02">sFTP Host </th>
+            </tr>
+            <tr>
+                <td class="tg-3w7a"><input type="text" class="form-control" value="@EditTask_Detail.EmailNotificationAddress" /> </td>
+                
+                <td class="tg-5d1u"><input type="text" class="form-control" value="@EditTask_Detail.SFtphost" /></td>
+            </tr>
+        </table>
+
+        <table class="tg" style=" width: 100%;height: 100%;">
+            <tr>
+                <th class="tg-yt02">Upload From </th>
+                <th class="tg-yt02">Upload To </th>
+            </tr>
+            <tr>
+                <td class="tg-3w7a"><input type="text" class="form-control" value="@EditTask_Detail.SFtpuploadFrom" /> </td>
+                <td class="tg-5d1u"><input type="text" class="form-control" value="@EditTask_Detail.SFtpuploadto" /></td>
+            </tr>
+        </table>
+
+        <table class="tg" style=" width: 100%;height: 100%;">
+            <tr>
+                <th class="tg-yt02">Download From </th>
+                <th class="tg-yt02">Download To </th>
+            </tr>
+            <tr>
+                <td class="tg-3w7a"><input type="text" class="form-control" value="@EditTask_Detail.SFtpdownloadFrom" /> </td>
+                <td class="tg-5d1u"><input type="text" class="form-control" value="@EditTask_Detail.SFtpdownloadTo" /></td>
+            </tr>
+        </table>
+
+        <table class="tg" style=" width: 100%;height: 100%;">
+            <tr>
+                <th class="tg-yt02">Other1 </th>
+                <th class="tg-yt02">Other2 </th>
+                <th class="tg-yt02">Other3 </th>
+                <th class="tg-yt02">Other4 </th>
+            </tr>
+            <tr>
+                <td class="tg-3w7a"><input type="text" class="form-control" value="@EditTask_Detail.Extra1" /> </td>
+                <td class="tg-5d1u"><input type="text" class="form-control" value="@EditTask_Detail.Extra2" /></td>
+                <td class="tg-3w7a"><input type="text" class="form-control" value="@EditTask_Detail.Extra3" /> </td>
+                <td class="tg-5d1u"><input type="text" class="form-control" value="@EditTask_Detail.Extra4" /></td>
+            </tr>
+        </table>
+
+
+        <table class="tg" style=" width: 100%;height: 100%;">
+            <tr>
+                <th class="tg-yt02">Description </th>
+
+            </tr>
+            <tr>               
+                    @*<textarea class="form-control" @EditTask.Description />*@
+                
+                <td class="tg-5d1u"><input type="text" class="form-control" value="@EditTask.Description" /></td>
+              
+            </tr>
+        </table>
+        <div id="submission">
+            <button @onclick="@SaveTask" type="button" class="btn btn-primary">Save</button>
+            <button @onclick="@CloseEditWindow" type="button" class="btn btn-primary">Cancel</button>
+        </div>
+
+
+        @* *@
+
+
+    </div>
+
+}
+
+
+
+
+@* Main window *@
+
+
 @if (Im_TaskList == null)
 {
 
@@ -68,7 +178,7 @@ else
 
 
                     @*<button class="btn btn-primary" @onclick="@(async () => await getTaskDetails(MTask.Id))">New</button>
-        <label>@DetailTask.EmailNotificationAddress</label>*@
+                        <label>@DetailTask.EmailNotificationAddress</label>*@
 
                     @if (MTask.Id == JobId)
                     {
@@ -109,7 +219,7 @@ else
 
                 @*Edit Button onclick = "@(async () => await EditTaskMaster(MTask.Id))"*@
                 <td>
-                    @*<img src="Images/input_edit.png" onclick="@(async () => await EditTaskMaster(MTask.Id))" />*@
+                    <img src="Images/input_edit.png" @onclick="@(async () => await EditScheduleTask(MTask.Id))" />
                 </td>
             </tr>
 
@@ -236,7 +346,7 @@ else
 
                                 }
 
-                           
+
                             </td>
                         </tr>
 
@@ -258,6 +368,106 @@ else
 
 
 
+
+<style type="text/css">
+
+    #submission {
+        width: 100%;
+    }
+
+    #detailsRow {
+        border-bottom-color: darkgreen;
+        background-color: gainsboro
+    }
+
+    #detailsRow {
+        font-size: 13px;
+    }
+
+        #detailsRow .detailsTitle {
+            min-width: 9%;
+            display: inline-block;
+        }
+
+        #detailsRow .detailsData {
+            display: inline-block;
+            color: darkblue;
+            font-style: italic;
+            font-family: Ubuntu;
+            <!-- font-size: medium -->
+        }
+
+    #submission button {
+        float: right;
+        margin-right: 5px;
+    }
+
+
+
+    .tg {
+        border-collapse: collapse;
+        border-spacing: 0;
+        border: none;
+        border-color: #aabcfe;
+    }
+
+        .tg td {
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            padding: 10px 5px;
+            border-style: solid;
+            border-width: 0px;
+            overflow: hidden;
+            word-break: normal;
+            border-color: #aabcfe;
+            color: #669;
+            background-color: #e8edff;
+        }
+
+        .tg th {
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            font-weight: normal;
+            padding: 10px 5px;
+            border-style: solid;
+            border-width: 0px;
+            overflow: hidden;
+            word-break: normal;
+            border-color: #aabcfe;
+            color: #039;
+            background-color: #b9c9fe;
+        }
+
+        .tg .tg-5d1u {
+            background-color: #D2E4FC;
+            font-weight: bold;
+            /* font-family: "Lucida Console", Monaco, monospace !important;*/
+            border-color: inherit;
+            text-align: left;
+            vertical-align: top
+        }
+
+        .tg .tg-yt02 {
+            font-weight: normal;
+            font-size: small;
+            font-family: "Lucida Console", Monaco, monospace !important;
+            border-color: inherit;
+            text-align: left;
+            vertical-align: top
+        }
+
+        .tg .tg-3w7a {
+            background-color: #D2E4FC;
+            font-weight: bold;
+            font-family: "Lucida Console", Monaco, monospace !important;
+            color: #493f3f;
+            border-color: inherit;
+            text-align: left
+        }
+</style>
+
+
+
 @code {
     int currentCount = 0;
 
@@ -275,6 +485,12 @@ else
     ReplyJob_Detail RJobDetails = new ReplyJob_Detail();
 
     ImagingScheduleJobModel_Detail DetailTask = new ImagingScheduleJobModel_Detail();
+
+
+    //Edit data
+
+    ImagingScheduleJobModel EditTask = new ImagingScheduleJobModel();
+    ImagingScheduleJobModel_Detail EditTask_Detail = new ImagingScheduleJobModel_Detail();
 
 
 
@@ -342,8 +558,8 @@ else
         }
 
 
-         JobId = JobId_fromMasterAPI;
-       
+        JobId = JobId_fromMasterAPI;
+
         Console.WriteLine("Details" + JobId_fromMasterAPI);
 
         var client_detail = new RemoteImagingScheduleJob_Detail.RemoteImagingScheduleJob_DetailClient(channel);
@@ -365,5 +581,76 @@ else
 
     }
 
+    async Task EditScheduleTask(int JobIdtoEdit)
+    {
+        ShowEditWindow = "Open";
+        showDetails = false;
+
+        //find the task -> will be return in a MOdel
+        // use that model to update/edit
+
+        var client = new RemoteImagingScheduleJob.RemoteImagingScheduleJobClient(channel);
+
+        var input = new ImagingScheduleJobLookupModel { Id = JobIdtoEdit };
+
+        var reply = await client.GetImagingScheduleJobInfoAsync(input);
+
+
+        // Use reply as EditModel
+
+
+        EditTask = reply;
+
+        // Detail Info for Task
+
+        var client_detail = new RemoteImagingScheduleJob_Detail.RemoteImagingScheduleJob_DetailClient(channel);
+
+        var input_Detail = new ImagingScheduleJobLookupModel_Detail { Jobid = JobIdtoEdit };
+
+
+        var reply_Detail = await client_detail.GetImagingScheduleJobInfo_DetailAsync(input_Detail);
+
+        EditTask_Detail = reply_Detail;
+
+    }
+
+
+    void CloseEditWindow()
+    {
+
+        ShowEditWindow = "Close";
+
+    }
+
+    void Editwindow()
+    {
+        ShowEditWindow = "Open";
+
+    }
+
+    protected async Task SaveTask()
+    {
+
+        //if (MasterJob_APIdata.Id == 0)
+        //{
+        //    await Http.SendJsonAsync(HttpMethod.Post, "/api/ImagingScheduleJobs/", MasterTask);
+        //    await Http.SendJsonAsync(HttpMethod.Post, "api/ImagingJobdetails/", DetailsTask);
+        //}
+        //else
+        //{
+        //    await Http.SendJsonAsync(HttpMethod.Put,"/api/ImagingScheduleJobs/"+ MasterJob_APIdata.Id,MasterJob_APIdata);
+        //    await Http.SendJsonAsync(HttpMethod.Put, "/api/ImagingJobdetails/" + DetailJob_APIdata.Id,DetailJob_APIdata);
+        //}
+        //MasterJob_APIdata = new ImagingScheduleJob();
+        //MasterTask = await Http.GetJsonAsync<ImagingScheduleJob[]>("/api/ImagingScheduleJobs/");
+
+
+        ////Details Info
+
+        //DetailsTask = await Http.GetJsonAsync<ImagingJobdetails[]>("api/ImagingJobdetails/" + DetailJob_APIdata.Id);
+        //DetailJob_APIdata = new ImagingJobdetails();
+
+        ShowEditWindow = "Close";
+    }
 
 }
