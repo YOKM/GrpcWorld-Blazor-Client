@@ -39,20 +39,20 @@
             </tr>
             <tr>
                 <td class="tg-3w7a"><input type="text" class="form-control" @bind-value="@EditTask.Jobname" /> </td>
-                <td class="tg-5d1u"><input type="text"  value="@EditTask.ScheduleTIME" /></td>
-                <td class="tg-5d1u"><input type="text" class="form-control" value="@EditTask.IsActive" /></td>
+                <td class="tg-5d1u"><input type="text"  class="form-control" @bind-value= "@EditTask.ScheduleTIME" /></td>
+                <td class="tg-5d1u"><input type="text" class="form-control" @bind-value="@EditTask.IsActive" /></td>
             </tr>
         </table>
 
-        <table class="tg" style=" width: 100%;height: 100%;">
+        <table class="tg" style=" width: 100%;height: 100%;">-
             <tr>
                 <th class="tg-yt02">Email Notification </th>
                 <th class="tg-yt02">sFTP Host </th>
             </tr>
             <tr>
-                <td class="tg-3w7a"><input type="text" class="form-control" value="@EditTask_Detail.EmailNotificationAddress" /> </td>
+                <td class="tg-3w7a"><input type="text" class="form-control" @bind-value="@EditTask_Detail.EmailNotificationAddress" /> </td>
                 
-                <td class="tg-5d1u"><input type="text" class="form-control" value="@EditTask_Detail.SFtphost" /></td>
+                <td class="tg-5d1u"><input type="text" class="form-control" @bind-value="@EditTask_Detail.SFtphost" /></td>
             </tr>
         </table>
 
@@ -62,8 +62,8 @@
                 <th class="tg-yt02">Upload To </th>
             </tr>
             <tr>
-                <td class="tg-3w7a"><input type="text" class="form-control" value="@EditTask_Detail.SFtpuploadFrom" /> </td>
-                <td class="tg-5d1u"><input type="text" class="form-control" value="@EditTask_Detail.SFtpuploadto" /></td>
+                <td class="tg-3w7a"><input type="text" class="form-control" @bind-value="@EditTask_Detail.SFtpuploadFrom" /> </td>
+                <td class="tg-5d1u"><input type="text" class="form-control" @bind-value="@EditTask_Detail.SFtpuploadto" /></td>
             </tr>
         </table>
 
@@ -73,8 +73,8 @@
                 <th class="tg-yt02">Download To </th>
             </tr>
             <tr>
-                <td class="tg-3w7a"><input type="text" class="form-control" value="@EditTask_Detail.SFtpdownloadFrom" /> </td>
-                <td class="tg-5d1u"><input type="text" class="form-control" value="@EditTask_Detail.SFtpdownloadTo" /></td>
+                <td class="tg-3w7a"><input type="text" class="form-control" @bind-value="@EditTask_Detail.SFtpdownloadFrom" /> </td>
+                <td class="tg-5d1u"><input type="text" class="form-control" @bind-value="@EditTask_Detail.SFtpdownloadTo" /></td>
             </tr>
         </table>
 
@@ -86,10 +86,10 @@
                 <th class="tg-yt02">Other4 </th>
             </tr>
             <tr>
-                <td class="tg-3w7a"><input type="text" class="form-control" value="@EditTask_Detail.Extra1" /> </td>
-                <td class="tg-5d1u"><input type="text" class="form-control" value="@EditTask_Detail.Extra2" /></td>
-                <td class="tg-3w7a"><input type="text" class="form-control" value="@EditTask_Detail.Extra3" /> </td>
-                <td class="tg-5d1u"><input type="text" class="form-control" value="@EditTask_Detail.Extra4" /></td>
+                <td class="tg-3w7a"><input type="text" class="form-control" @bind-value="@EditTask_Detail.Extra1" /> </td>
+                <td class="tg-5d1u"><input type="text" class="form-control" @bind-value="@EditTask_Detail.Extra2" /></td>
+                <td class="tg-3w7a"><input type="text" class="form-control" @bind-value="@EditTask_Detail.Extra3" /> </td>
+                <td class="tg-5d1u"><input type="text" class="form-control" @bind-value="@EditTask_Detail.Extra4" /></td>
             </tr>
         </table>
 
@@ -101,7 +101,7 @@
             </tr>
             <tr>
                 @*<td class="tg-5d1u"><input type="text" class="form-control" value="@EditTask.Description" /></td>*@
-              <td class="tg-3w7a"><textarea type="text" class="form-control" value="@EditTask.Description" /> </td>
+              <td class="tg-3w7a"><textarea type="text" class="form-control" @bind="@EditTask.Description" /> </td>
             </tr>
         </table>
         <div id="submission">
@@ -478,7 +478,7 @@ else
     ImagingScheduleJobLookupModel DetailsTask = new ImagingScheduleJobLookupModel();
 
 
-    GrpcChannel channel = GrpcChannel.ForAddress("https://localhost:5001");
+   static GrpcChannel channel = GrpcChannel.ForAddress("https://localhost:5001");
 
 
     ReplyJob_Detail RJobDetails = new ReplyJob_Detail();
@@ -492,7 +492,9 @@ else
     ImagingScheduleJobModel_Detail EditTask_Detail = new ImagingScheduleJobModel_Detail();
 
 
+     RemoteImagingScheduleJob_Detail.RemoteImagingScheduleJob_DetailClient  client_Detail = new  RemoteImagingScheduleJob_Detail.RemoteImagingScheduleJob_DetailClient(channel);
 
+     RemoteImagingScheduleJob.RemoteImagingScheduleJobClient client = new RemoteImagingScheduleJob.RemoteImagingScheduleJobClient(channel);
 
 
 
@@ -630,26 +632,22 @@ else
     protected async Task SaveTask()
     {
 
-        //if (MasterJob_APIdata.Id == 0)
-        //{
-        //    await Http.SendJsonAsync(HttpMethod.Post, "/api/ImagingScheduleJobs/", MasterTask);
-        //    await Http.SendJsonAsync(HttpMethod.Post, "api/ImagingJobdetails/", DetailsTask);
-        //}
-        //else
-        //{
-        //    await Http.SendJsonAsync(HttpMethod.Put,"/api/ImagingScheduleJobs/"+ MasterJob_APIdata.Id,MasterJob_APIdata);
-        //    await Http.SendJsonAsync(HttpMethod.Put, "/api/ImagingJobdetails/" + DetailJob_APIdata.Id,DetailJob_APIdata);
-        //}
-        //MasterJob_APIdata = new ImagingScheduleJob();
-        //MasterTask = await Http.GetJsonAsync<ImagingScheduleJob[]>("/api/ImagingScheduleJobs/");
-
-
-        ////Details Info
-
-        //DetailsTask = await Http.GetJsonAsync<ImagingJobdetails[]>("api/ImagingJobdetails/" + DetailJob_APIdata.Id);
-        //DetailJob_APIdata = new ImagingJobdetails();
-
+        await UpdateImagingScheduleJob(channel,EditTask);
         ShowEditWindow = "Close";
+        await OnInitializedAsync();
+    }
+
+
+    async Task UpdateImagingScheduleJob(GrpcChannel channel, ImagingScheduleJobModel ImagingShceduleTask_toUpdate)
+    {
+     
+          
+        var reply = await client.UpdateImagingScheduleJobAsync(EditTask);
+           
+          
+        var replyDetail = await client_Detail.UpdateImagingScheduleJob_DetailAsync(EditTask_Detail);
+
+        Console.WriteLine(reply.Result);
     }
 
 }
