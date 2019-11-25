@@ -1,9 +1,10 @@
 ﻿@page "/counter"
 
-
 @using GrpcService.Data;
+@using GrpcService.Models;
 @using GrpcService.Protos;
 @using Grpc.Net.Client;
+
 
 
 
@@ -24,7 +25,7 @@
         <div class="modal-header text-center">
             <h4 class="modal-title w-100 font-weight-bold">Edit Schedule Task</h4>
             <h5>@EditTask.Jobname </h5>
-           
+
             <button type="button" class="close" data-dismiss="modal" aria-label="Close" @onclick="@CloseEditWindow">
                 <span aria-hidden="true">&times;</span>
             </button>
@@ -39,19 +40,20 @@
             </tr>
             <tr>
                 <td class="tg-3w7a"><input type="text" class="form-control" @bind-value="@EditTask.Jobname" /> </td>
-                <td class="tg-5d1u"><input type="text"  class="form-control" @bind-value= "@EditTask.ScheduleTIME" /></td>
+                <td class="tg-5d1u"><input type="text" class="form-control" @bind-value="@EditTask.ScheduleTIME" /></td>
                 <td class="tg-5d1u"><input type="text" class="form-control" @bind-value="@EditTask.IsActive" /></td>
             </tr>
         </table>
 
-        <table class="tg" style=" width: 100%;height: 100%;">-
+        <table class="tg" style=" width: 100%;height: 100%;">
+            -
             <tr>
                 <th class="tg-yt02">Email Notification </th>
                 <th class="tg-yt02">sFTP Host </th>
             </tr>
             <tr>
                 <td class="tg-3w7a"><input type="text" class="form-control" @bind-value="@EditTask_Detail.EmailNotificationAddress" /> </td>
-                
+
                 <td class="tg-5d1u"><input type="text" class="form-control" @bind-value="@EditTask_Detail.SFtphost" /></td>
             </tr>
         </table>
@@ -101,7 +103,7 @@
             </tr>
             <tr>
                 @*<td class="tg-5d1u"><input type="text" class="form-control" value="@EditTask.Description" /></td>*@
-              <td class="tg-3w7a"><textarea type="text" class="form-control" @bind="@EditTask.Description" /> </td>
+                <td class="tg-3w7a"><textarea type="text" class="form-control" @bind="@EditTask.Description" /> </td>
             </tr>
         </table>
         <div id="submission">
@@ -143,12 +145,12 @@ else
 
             <td align="left" style="border: solid 1px #659EC7; padding: 5px;table-layout:fixed;">
                 Job Name
-                @*<img src="@ImageSortname" onclick="@(async () => await JobSorting("JobName"))" />
-                    <label style="font-size:10px" onclick="@(async () => await JobSorting("JobName"))">Sort </label>*@
+                <img src="@ImageSortname" @onclick="@(async () => await JobSorting("JobID"))" />
+                <label style="font-size:10px" @onclick="@(async () => await JobSorting("JobID"))">Sort </label>
 
-                @*<input width="70" onchange=@onJobnameChanged oninput="(this.dispatchEvent(new CustomEvent('change', {bubbles: true})))" />*@
-                @*<input type="text" class="form-control" placeholder="Search" aria-label="" aria-describedby="basic-addon1"
-                    onchange=@onJobnameChanged oninput="(this.dispatchEvent(new CustomEvent('change', {bubbles: true})))" />*@
+                <input width="70" @onchange=@onJobnameChanged oninput="(this.dispatchEvent(new CustomEvent('change', {bubbles: true})))" />
+                <input type="text" class="form-control" placeholder="Search" aria-label="" aria-describedby="basic-addon1"
+                       @onchange=@onJobnameChanged oninput="(this.dispatchEvent(new CustomEvent('change', {bubbles: true})))" />
                 <label style="font-size:10px">Search</label>
             </td>
             <td data-toggle="popover" style="border: solid 1px #659EC7; padding: 5px;table-layout:fixed;">
@@ -468,6 +470,15 @@ else
 
 
 @code {
+
+    ImagingScheduleJob[] imagingScheduleJobs;
+
+    ImagingScheduleJob_Detail[] imagingScheduleJob_Details;
+
+
+
+    private Task task;
+
     int currentCount = 0;
 
     ImagingScheduleJobModel Im = new ImagingScheduleJobModel();
@@ -478,7 +489,7 @@ else
     ImagingScheduleJobLookupModel DetailsTask = new ImagingScheduleJobLookupModel();
 
 
-   static GrpcChannel channel = GrpcChannel.ForAddress("https://localhost:5001");
+    static GrpcChannel channel = GrpcChannel.ForAddress("https://localhost:5001");
 
 
     ReplyJob_Detail RJobDetails = new ReplyJob_Detail();
@@ -492,9 +503,9 @@ else
     ImagingScheduleJobModel_Detail EditTask_Detail = new ImagingScheduleJobModel_Detail();
 
 
-     RemoteImagingScheduleJob_Detail.RemoteImagingScheduleJob_DetailClient  client_Detail = new  RemoteImagingScheduleJob_Detail.RemoteImagingScheduleJob_DetailClient(channel);
+    RemoteImagingScheduleJob_Detail.RemoteImagingScheduleJob_DetailClient client_Detail = new RemoteImagingScheduleJob_Detail.RemoteImagingScheduleJob_DetailClient(channel);
 
-     RemoteImagingScheduleJob.RemoteImagingScheduleJobClient client = new RemoteImagingScheduleJob.RemoteImagingScheduleJobClient(channel);
+    RemoteImagingScheduleJob.RemoteImagingScheduleJobClient client = new RemoteImagingScheduleJob.RemoteImagingScheduleJobClient(channel);
 
 
 
@@ -514,6 +525,7 @@ else
     void IncrementCount()
     {
         currentCount++;
+
     }
 
 
@@ -527,6 +539,8 @@ else
         var em_job = new EmptyJob();
 
         Im_TaskList = await ScheduleJobClient.RetrieveAllImagingScheduleJobsAsync(em_job);
+
+
 
     }
 
@@ -632,7 +646,7 @@ else
     protected async Task SaveTask()
     {
 
-        await UpdateImagingScheduleJob(channel,EditTask);
+        await UpdateImagingScheduleJob(channel, EditTask);
         ShowEditWindow = "Close";
         await OnInitializedAsync();
     }
@@ -640,14 +654,78 @@ else
 
     async Task UpdateImagingScheduleJob(GrpcChannel channel, ImagingScheduleJobModel ImagingShceduleTask_toUpdate)
     {
-     
-          
+
+
         var reply = await client.UpdateImagingScheduleJobAsync(EditTask);
-           
-          
+
+
         var replyDetail = await client_Detail.UpdateImagingScheduleJob_DetailAsync(EditTask_Detail);
 
         Console.WriteLine(reply.Result);
     }
+
+
+    protected async Task JobSorting(string sortColumn)
+    {
+        //MasterTask = await Http.GetJsonAsync<ImagingScheduleJob[]>("/api/ImagingScheduleJobs/");
+
+        if (sortStatus)
+        {
+            ImageSortname = "Images/sort_descending.png";
+            sortStatus = false;
+            switch (sortColumn)
+            {
+
+                case "JobName":
+                    //Im_TaskList =  Im_TaskList.OrderBy(x => x.Jobname).ToArray();
+                    Im_TaskList.Items.OrderBy(x => x.Jobname).ToList();
+                    break;
+                case "JobID":
+                    //Im_TaskList =  Im_TaskList.OrderBy(x => x.Jobname).ToArray();
+                    Im_TaskList.Items.OrderBy(x => x.Id);
+                    break;
+
+            }
+        }
+        else
+        {
+            ImageSortname = "Images/sort_ascending.png";
+
+            sortStatus = true;
+            switch (sortColumn)
+            {
+                case "JobName":
+                    //   MasterTask = MasterTask.OrderByDescending(x => x.Jobname).ToArray();
+                    Im_TaskList.Items.OrderByDescending(x => x.Jobname).ToList();
+                    break;
+                case "JobID":
+                    //   MasterTask = MasterTask.OrderByDescending(x => x.Jobname).ToArray();
+                    Im_TaskList.Items.OrderByDescending(x => x.Id);
+                    break;
+            }
+
+
+        }
+
+        await OnInitializedAsync();
+
+    }
+
+
+    void onJobnameChanged(ChangeEventArgs args)
+    {
+        string values = args.Value.ToString();
+        Console.WriteLine("values from on Jobchange UIChangeEvents: " + values);
+
+       
+      
+
+    }
+
+
+  
+
+
+
 
 }
