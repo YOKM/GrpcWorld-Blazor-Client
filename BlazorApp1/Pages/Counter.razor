@@ -8,11 +8,11 @@
 
 
 
-<h1>Counter</h1>
+@*<h1>Counter</h1>
 
 <p>Current count: @currentCount</p>
 
-<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>*@
 
 
 
@@ -133,7 +133,7 @@
 }
 else
 {
-    <p>Jobname : @Im_TaskList.Items.Count()</p>
+    @*<p>Jobname : @Im_TaskList.Items.Count()</p>*@
 
 
     <table>
@@ -141,17 +141,20 @@ else
         <tr style="height: 30px; background-color:#336699 ; color:#FFFFFF ;border: solid 1px #659EC7;">
             <td>
                 @*Header and filter should go here*@
+               
             </td>
 
             <td align="left" style="border: solid 1px #659EC7; padding: 5px;table-layout:fixed;">
                 Job Name
-                <img src="@ImageSortname" @onclick="@(async () => await JobSorting("JobID"))" />
-                <label style="font-size:10px" @onclick="@(async () => await JobSorting("JobID"))">Sort </label>
+                <img src="@ImageSortname" @onclick="@(async () => await JobSorting("JobName"))" />
+                <label style="font-size:10px" @onclick="@(async () => await JobSorting("JobName"))">Sort </label>
 
-                <input width="70" @onchange=@onJobnameChanged oninput="(this.dispatchEvent(new CustomEvent('change', {bubbles: true})))" />
-                <input type="text" class="form-control" placeholder="Search" aria-label="" aria-describedby="basic-addon1"
-                       @onchange=@onJobnameChanged oninput="(this.dispatchEvent(new CustomEvent('change', {bubbles: true})))" />
-                <label style="font-size:10px">Search</label>
+                @*<input width="70" @onchange=@onJobnameChanged oninput="(this.dispatchEvent(new CustomEvent('change', {bubbles: true})))" />*@
+                @*<input type="text" class="form-control" placeholder="Search" aria-label="" aria-describedby="basic-addon1"
+                       @onchange=@onJobnameChanged oninput="(this.dispatchEvent(new CustomEvent('change', {bubbles: true})))" />*@
+                @*<label style="font-size:10px">Search</label>*@
+
+
             </td>
             <td data-toggle="popover" style="border: solid 1px #659EC7; padding: 5px;table-layout:fixed;">
                 Schedule Time
@@ -167,6 +170,7 @@ else
             </td>
         </tr>
 
+        
 
         @*Master info*@
         @foreach (var MTask in Im_TaskList.Items)
@@ -179,7 +183,7 @@ else
 
 
                     @*<button class="btn btn-primary" @onclick="@(async () => await getTaskDetails(MTask.Id))">New</button>
-                        <label>@DetailTask.EmailNotificationAddress</label>*@
+                    <label>@DetailTask.EmailNotificationAddress</label>*@
 
                     @if (MTask.Id == JobId)
                     {
@@ -194,7 +198,7 @@ else
 
 
 
-                <td>@MTask.Id</td>
+                @*<td>@MTask.Id</td>*@
                 <td align="left" style="border: solid 1px #659EC7; padding: 5px;table-layout:fixed; ">
                     @MTask.Jobname
                 </td>
@@ -484,12 +488,17 @@ else
     ImagingScheduleJobModel Im = new ImagingScheduleJobModel();
 
     ImagingScheduleJobList Im_TaskList = new ImagingScheduleJobList();
+    ImagingScheduleJobList Im_TaskListF = new ImagingScheduleJobList();
+
     ImagingScheduleJobList_Detail ImDetail_TaskList = new ImagingScheduleJobList_Detail();
 
     ImagingScheduleJobLookupModel DetailsTask = new ImagingScheduleJobLookupModel();
 
 
     static GrpcChannel channel = GrpcChannel.ForAddress("https://localhost:5001");
+    RemoteImagingScheduleJob.RemoteImagingScheduleJobClient  client =
+        new RemoteImagingScheduleJob.RemoteImagingScheduleJobClient(channel);
+
 
 
     ReplyJob_Detail RJobDetails = new ReplyJob_Detail();
@@ -505,7 +514,7 @@ else
 
     RemoteImagingScheduleJob_Detail.RemoteImagingScheduleJob_DetailClient client_Detail = new RemoteImagingScheduleJob_Detail.RemoteImagingScheduleJob_DetailClient(channel);
 
-    RemoteImagingScheduleJob.RemoteImagingScheduleJobClient client = new RemoteImagingScheduleJob.RemoteImagingScheduleJobClient(channel);
+    //   RemoteImagingScheduleJob.RemoteImagingScheduleJobClient client = new RemoteImagingScheduleJob.RemoteImagingScheduleJobClient(channel);
 
 
 
@@ -521,6 +530,7 @@ else
     string Messages = "";
     bool sortStatus = false;
     int JobId = 0;
+    string test;
 
     void IncrementCount()
     {
@@ -537,9 +547,12 @@ else
         Im = await ScheduleJobClient.GetImagingScheduleJobInfoAsync(ScheduleJobInput);
 
         var em_job = new EmptyJob();
+        var ImgJobfilter = new ImgJobRetrieveOptions();
+
+        ImgJobfilter.Filter = "asc";
 
         Im_TaskList = await ScheduleJobClient.RetrieveAllImagingScheduleJobsAsync(em_job);
-
+        //   Im_TaskListF = await client.RetrieveAllImagingScheduleJobsFilterAsync(ImgJobfilter);
 
 
     }
@@ -667,6 +680,63 @@ else
 
     protected async Task JobSorting(string sortColumn)
     {
+
+        var ImgJobfilter = new ImgJobRetrieveOptions();
+
+
+        if (sortStatus)
+        {
+            ImageSortname = "Images/sort_descending.png";
+            sortStatus = false;
+
+            ImgJobfilter.Filter= "desc";
+
+            Im_TaskListF = await client.RetrieveAllImagingScheduleJobsFilterAsync(ImgJobfilter);
+
+
+        }
+        else
+        {
+            ImageSortname = "Images/sort_ascending.png";
+
+            sortStatus = true;
+
+            ImgJobfilter.Filter = "asc";
+
+            Im_TaskListF = await client.RetrieveAllImagingScheduleJobsFilterAsync(ImgJobfilter);
+
+        }
+        Im_TaskList = Im_TaskListF.Clone();
+        test = Im_TaskList.Items[0].Jobname;
+
+        StateHasChanged();  //refresh
+
+        // await OnInitializedAsync();
+
+    }
+
+
+    protected async Task onJobnameChanged(ChangeEventArgs args)
+    {
+        string values = args.Value.ToString();
+        Console.WriteLine("values from on Jobchange UIChangeEvents: " + values);
+
+  var ImgJobfilter = new ImgJobRetrieveOptions();
+
+        ImgJobfilter.Filter= "search";
+        ImgJobfilter.InputValue = values;
+
+        Im_TaskList = await client.RetrieveAllImagingScheduleJobsFilterAsync(ImgJobfilter);
+   
+
+        StateHasChanged();
+
+    }
+
+    
+
+    protected async Task JobSortingA(string sortColumn)
+    {
         //MasterTask = await Http.GetJsonAsync<ImagingScheduleJob[]>("/api/ImagingScheduleJobs/");
 
         if (sortStatus)
@@ -707,23 +777,12 @@ else
 
         }
 
-        await OnInitializedAsync();
+        StateHasChanged();
+
+        //   await OnInitializedAsync();
 
     }
 
-
-    void onJobnameChanged(ChangeEventArgs args)
-    {
-        string values = args.Value.ToString();
-        Console.WriteLine("values from on Jobchange UIChangeEvents: " + values);
-
-       
-      
-
-    }
-
-
-  
 
 
 
