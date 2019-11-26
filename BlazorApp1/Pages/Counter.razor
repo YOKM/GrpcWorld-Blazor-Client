@@ -150,9 +150,9 @@ else
                 <label style="font-size:10px" @onclick="@(async () => await JobSorting("JobName"))">Sort </label>
 
                 @*<input width="70" @onchange=@onJobnameChanged oninput="(this.dispatchEvent(new CustomEvent('change', {bubbles: true})))" />*@
-                @*<input type="text" class="form-control" placeholder="Search" aria-label="" aria-describedby="basic-addon1"
-                       @onchange=@onJobnameChanged oninput="(this.dispatchEvent(new CustomEvent('change', {bubbles: true})))" />*@
-                @*<label style="font-size:10px">Search</label>*@
+                <input type="text" class="form-control" placeholder="Search" aria-label="" aria-describedby="basic-addon1"
+                       @onchange=@onJobnameChanged oninput="(this.dispatchEvent(new CustomEvent('change', {bubbles: true})))" />
+                <label style="font-size:10px">Search</label>
 
 
             </td>
@@ -716,21 +716,33 @@ else
     }
 
 
-    protected async Task onJobnameChanged(ChangeEventArgs args)
+  
+
+    void onJobnameChanged(ChangeEventArgs args)
     {
         string values = args.Value.ToString();
         Console.WriteLine("values from on Jobchange UIChangeEvents: " + values);
 
-  var ImgJobfilter = new ImgJobRetrieveOptions();
+        JobNameFilteringlist(values, "Jobname");
 
-        ImgJobfilter.Filter= "search";
-        ImgJobfilter.InputValue = values;
+    }
 
-        Im_TaskList = await client.RetrieveAllImagingScheduleJobsFilterAsync(ImgJobfilter);
+    protected async Task JobNameFilteringlist(string Value,string columnName)
+    {
+          
+           Console.WriteLine("values from on Jobchange UIChangeEvents: " + Value);
+
+          var ImgJobfilter = new ImgJobRetrieveOptions();
+
+                ImgJobfilter.Filter= "search";
+                ImgJobfilter.InputValue = Value;
+
+           Im_TaskList = await client.RetrieveAllImagingScheduleJobsFilterAsync(ImgJobfilter);
    
 
         StateHasChanged();
 
+       
     }
 
     
